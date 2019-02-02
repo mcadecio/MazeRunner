@@ -91,7 +91,7 @@ public class Maze {
     public void jumpOverPit(String dir) {
         if(isThereAPit(dir)) {
             if(dir.equals("R")) {
-                move(0 +1, 2);
+                move(0, 2);
             } else if (dir.equals("L")) {
                 move(0, -2);
             } else if (dir.equals("U")) {
@@ -286,7 +286,7 @@ public class Maze {
             solution[i][0] = '|';
         }
         addPits();
-        printMap(solution);
+        //printMap(solution);
     }
     private void addPits(){
         solution[1][2] = '0';
