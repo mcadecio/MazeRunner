@@ -91,7 +91,7 @@ public class Maze {
     public void jumpOverPit(String dir) {
         if(isThereAPit(dir)) {
             if(dir.equals("R")) {
-                move(0, 2);
+                move(0 +1, 2);
             } else if (dir.equals("L")) {
                 move(0, -2);
             } else if (dir.equals("U")) {
@@ -114,7 +114,7 @@ public class Maze {
             myMap[row+rowMove][col+colMove] = '*';
             return false;
         } else {
-            myMap[row+rowMove][col+colMove] = '-';
+            myMap[row+rowMove][col+colMove] = '|';
             return false;
         }
     }
@@ -295,7 +295,7 @@ public class Maze {
         solution[6][4] = '0';
         solution[15][4] = '0';
         solution[9][10] = '0';
-        solution[13][17] = '0';
+        //solution[13][17] = '0';
         solution[13][15] = '0';
         solution[18][10] = '0';
     }
