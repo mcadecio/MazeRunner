@@ -1,0 +1,680 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Action API",
+    "description": "An API that will enable you to interact with an Incident Coordination Framework",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "Headsup",
+      "description": "Directly Interact with an Incident"
+    },
+    {
+      "name": "Roles",
+      "description": "Manage and create roles for your Incident"
+    },
+    {
+      "name": "Clerk",
+      "description": "Search current and past incidents"
+    }
+  ],
+  "paths": {
+    "/api/headsup/create": {
+      "get": {
+        "tags": [
+          "Headsup"
+        ],
+        "summary": "Creates a new Incident",
+        "description": "Creates a new Incident and returns a summary of the incident",
+        "operationId": "createIncident",
+        "x-vertx-event-bus": "action_headsup.myapp",
+        "parameters": [
+          {
+            "name": "summary",
+            "in": "query",
+            "description": "The title to give the Incident",
+            "style": "form",
+            "required": true,
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "severity": {
+                          "type": "string"
+                        },
+                        "summary": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "result": {
+                    "_id": "mRR7PYgUX",
+                    "status": "open",
+                    "severity": "",
+                    "summary": "Some Incident"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/headsup/report": {
+      "post": {
+        "tags": [
+          "Headsup"
+        ],
+        "operationId": "report",
+        "x-vertx-event-bus": "action_headsup.myapp",
+        "summary": "Adds new information to the Incident",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentReport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/headsup/escalate": {
+      "post": {
+        "tags": [
+          "Headsup"
+        ],
+        "summary": "Triggers an Incident escalation",
+        "operationId": "escalate",
+        "x-vertx-event-bus": "action_headsup.myapp",
+        "parameters": [
+          {
+            "name": "incidentGUID",
+            "in": "query",
+            "description": "The incident GUID to escalate",
+            "style": "form",
+            "required": true,
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, Incident Escalated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/headsup/end": {
+      "post": {
+        "summary": "Ends an Incident and returns a summary of the incident",
+        "tags": [
+          "Headsup"
+        ],
+        "operationId": "end",
+        "x-vertx-event-bus": "action_headsup.myapp",
+        "parameters": [
+          {
+            "name": "incidentGUID",
+            "in": "query",
+            "description": "The incident GUID",
+            "style": "form",
+            "required": true,
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ended",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/headsup/update/status": {
+      "post": {
+        "tags": [
+          "Headsup"
+        ],
+        "summary": "Updates the status of an Incident",
+        "operationId": "updateStatus",
+        "x-vertx-event-bus": "action_headsup.myapp",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentStatusUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/headsup/falsepositive": {
+      "post": {
+        "summary": "Ends an incident and declares it as a False Positive",
+        "tags": [
+          "Headsup"
+        ],
+        "operationId": "falsePositive",
+        "x-vertx-event-bus": "action_headsup.myapp",
+        "parameters": [
+          {
+            "name": "incidentGUID",
+            "in": "query",
+            "description": "The incident GUID",
+            "required": true,
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/headsup/nonpriority": {
+      "post": {
+        "summary": "Ends the Incident and links it to a ticket",
+        "tags": [
+          "Headsup"
+        ],
+        "operationId": "nonPriority",
+        "x-vertx-event-bus": "action_headsup.myapp",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentNPRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ended",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clerk/list": {
+      "get": {
+        "summary": "Returns all Incidents",
+        "description": "Returns the id and summary of every Incident",
+        "tags": [
+          "Clerk"
+        ],
+        "operationId": "listAllIncidents",
+        "x-vertx-event-bus": "action_clerk.myapp",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string"
+                          },
+                          "summary": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clerk/incident/{incidentGUID}": {
+      "get": {
+        "summary": "Returns the field for any given Incident",
+        "tags": [
+          "Clerk"
+        ],
+        "operationId": "getFieldForIncident",
+        "x-vertx-event-bus": "action_clerk.myapp",
+        "parameters": [
+          {
+            "name": "incidentGUID",
+            "in": "path",
+            "description": "The Incident GUID",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "The fields to return",
+            "style": "form",
+            "explode": false,
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clerk/summary/{incidentGUID}": {
+      "parameters": [
+        {
+          "name": "incidentGUID",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Returns a summary for an Incident",
+        "tags": [
+          "Clerk"
+        ],
+        "operationId": "summary",
+        "x-vertx-event-bus": "action_clerk.myapp",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/roles/init": {
+      "get": {
+        "summary": "Forces the roles to start for an Incident",
+        "tags": [
+          "Roles"
+        ],
+        "deprecated": true,
+        "parameters": [
+          {
+            "name": "incidentGUID",
+            "in": "query",
+            "style": "form",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "init",
+        "x-vertx-event-bus": "action_roles.myapp",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/roles/viewroles": {
+      "get": {
+        "summary": "Returns all the current roles",
+        "description": "Returns all the current roles for a given Incident",
+        "tags": [
+          "Roles"
+        ],
+        "parameters": [
+          {
+            "name": "incidentGUID",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "view",
+        "x-vertx-event-bus": "action_roles.myapp",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/roles/createrole": {
+      "post": {
+        "summary": "Creates a new Role",
+        "description": "This can be used to create and assign existing roles",
+        "tags": [
+          "Roles"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentCreateRoleRequest"
+              }
+            }
+          }
+        },
+        "operationId": "createRole",
+        "x-vertx-event-bus": "action_roles.myapp",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "Centrify": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "Centrify will be used to validate your identity. Use your normal Mimecast username and password"
+      },
+      "LDAP": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "LDAP will be used to verify your identity. Use your normal LDAP username and password"
+      }
+    },
+    "schemas": {
+      "IncidentReport": {
+        "type": "object",
+        "properties": {
+          "incidentGUID": {
+            "type": "string"
+          },
+          "reporter": {
+            "type": "string"
+          },
+          "information": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "incidentGUID",
+          "reporter",
+          "information"
+        ]
+      },
+      "DefaultResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "IncidentStatusUpdate": {
+        "type": "object",
+        "properties": {
+          "incidentGUID": {
+            "type": "string"
+          },
+          "newValue": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "incidentGUID",
+          "newValue"
+        ]
+      },
+      "IncidentNPRequest": {
+        "description": "Incident Non Priority Request Template",
+        "type": "object",
+        "properties": {
+          "incidentGUID": {
+            "type": "string"
+          },
+          "ticket": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "incidentGUID",
+          "ticket"
+        ]
+      },
+      "IncidentCreateRoleRequest": {
+        "description": "Create a Role Template",
+        "type": "object",
+        "properties": {
+          "incidentGUID": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "assignees": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "incidentGUID",
+          "role"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "LDAP": [
+      ]
+    },
+    {
+      "Centrify": [
+      ]
+    }
+  ]
+}
